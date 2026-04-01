@@ -1,0 +1,463 @@
+\documentclass[12pt]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[margin=1.25in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{abstract}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{array}
+
+% ── Colors ────────────────────────────────────────────────────────────────────
+\definecolor{accent}{RGB}{139, 90, 43}
+\definecolor{dimgray}{RGB}{90, 85, 80}
+
+% ── Hyperref ──────────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  citecolor=accent,
+  urlcolor=accent,
+  pdftitle={Epistemic Computation Theory},
+  pdfauthor={Divine Sunday Ofuowoicho},
+}
+
+% ── Header / Footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{dimgray}{Epistemic Computation Theory}}
+\fancyhead[R]{\small\textcolor{dimgray}{Ofuowoicho, 2026}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Theorem environments ──────────────────────────────────────────────────────
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+
+% ── Custom commands ───────────────────────────────────────────────────────────
+\newcommand{\ES}{E(S, t)}
+\newcommand{\ESp}{E(S, t{+}1)}
+\newcommand{\SM}{\Sigma(S)}
+\newcommand{\EB}{\partial E(S)}
+\newcommand{\VS}{V_S}
+\newcommand{\RS}{R(S)}
+\newcommand{\US}{U(S)}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+\title{%
+  \textbf{Epistemic Computation Theory}\\[6pt]
+  {\large A Formal Framework for the Limits of Computational Knowledge}
+}
+
+\author{%
+  Divine Sunday Ofuowoicho\\[4pt]
+  \small Independent Researcher, Divine Sunday Ofuowoicho Labs\\
+  \small Nigeria\\[4pt]
+  \small \href{mailto:divinesunday247@gmail.com}{divinesunday247@gmail.com}\\
+  \small \href{https://github.com/er4700345-coder}{github.com/er4700345-coder}
+}
+
+\date{%
+  April 1, 2026\\[4pt]
+  \small Preprint v0.1 --- All conjectures open unless marked proved
+}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+We introduce \textbf{Epistemic Computation Theory (ECT)}, a formal research framework studying the fundamental limits of knowledge within computational systems. Where classical complexity theory asks \emph{how hard} it is to compute a function, ECT asks: can a computational system formally verify that it knows a truth, when verifying that truth requires complete self-knowledge?
+
+We present three conjectures. \textbf{ECT-1 (Epistemic Incompleteness)} claims that every sufficiently complex system has a non-empty class of well-formed, decidable propositions it cannot verify, because verification requires a complete self-model whose computational cost exceeds the system's resource bound. \textbf{ECT-2 (Epistemic Irreversibility)} claims that every genuine epistemic update destroys prior epistemic content irreversibly. \textbf{ECT-3 (Observer Epistemic Relativity)} claims that epistemic boundaries are observer-context-relative: two computationally identical systems with different contexts will have non-overlapping unknowable sets.
+
+Together, ECT-1, ECT-2, and ECT-3 constitute a unified theory of computational epistemic limits with direct implications for artificial intelligence, formal verification, programming language design, and multi-agent systems. All three conjectures are open. This preprint is the opening statement of a research program.
+\end{abstract}
+
+\vspace{1em}
+\noindent\textbf{Keywords:} epistemic computation, self-referential systems, computational limits, complexity theory, AI epistemics, observer-relative knowledge
+
+\vspace{1em}
+\noindent\textbf{MSC 2020:} 68Q05 (Automata and formal grammars), 03B42 (Logics of knowledge), 68T27 (Logic in artificial intelligence)
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Introduction}
+
+The limits of computation have been studied from multiple foundational directions. G\"{o}del~\cite{godel1931} showed that any sufficiently powerful formal system contains true statements it cannot prove. Turing~\cite{turing1936} showed that no Turing machine can decide, for all inputs, whether an arbitrary machine halts. Kolmogorov~\cite{kolmogorov1965} showed that the complexity of a string---the length of its shortest description---is not always computable.
+
+These results share a structure: they identify a gap between what \emph{exists} and what a system can \emph{reach}. ECT extends this tradition in a new direction.
+
+\medskip
+\noindent\textbf{The ECT Question.} \emph{Can a computational system formally verify a proposition about itself, when that verification requires the system to have complete knowledge of its own current state?}
+
+\medskip
+Our claim is that the answer is \textbf{no}---not in general, and not for a trivial reason. The gap is structural. We call this gap the \emph{epistemic boundary} of the system and make three conjectures about its properties.
+
+\subsection{Contributions}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item We introduce the \emph{epistemic boundary} $\EB$ as a formal object of computational study (Section~\ref{sec:framework}).
+  \item We state ECT-1, the \emph{Epistemic Incompleteness Conjecture}, with a proof sketch (Section~\ref{sec:ect1}).
+  \item We state ECT-2, the \emph{Epistemic Irreversibility Conjecture} (Section~\ref{sec:ect2}).
+  \item We state ECT-3, the \emph{Observer Epistemic Relativity Conjecture}, with a preliminary Observer Context Algebra (Section~\ref{sec:ect3}).
+  \item We show that ECT-1, ECT-2, and ECT-3 form a unified structure: three facets of a single formal object (Section~\ref{sec:unified}).
+  \item We discuss implications for AI systems, formal verification, and programming language design (Section~\ref{sec:implications}).
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{G\"{o}del's Incompleteness Theorems}
+
+G\"{o}del's first incompleteness theorem states that any consistent formal system $F$ capable of expressing arithmetic contains a sentence $G$ that is true but unprovable within $F$~\cite{godel1931}.
+
+ECT-1 is related but distinct. G\"{o}del's unprovable sentences are unprovable regardless of resources. ECT-1's unverifiable propositions are unverifiable \emph{within the system's own resource bound} but may be verifiable by a more powerful external system. The obstacle is not logical provability but \emph{self-referential computational cost}.
+
+\subsection{The Halting Problem}
+
+Turing showed that no Turing machine $T$ can decide, for all machines $M$ and inputs $I$, whether $M(I)$ halts~\cite{turing1936}. This is a result about \emph{undecidability}.
+
+The propositions in ECT-1's unknowable set $\US$ are \emph{decidable in principle}. They are not classically undecidable. The obstacle is not computability but the cost of self-modeling.
+
+\subsection{Kolmogorov Complexity}
+
+The Kolmogorov complexity $K(x)$ of a string $x$ is the length of the shortest program that produces $x$. Kolmogorov showed that $K(x)$ is not computable in general~\cite{kolmogorov1965}.
+
+ECT-1 extends this to epistemic states. The complete self-description of a system's knowledge $\SM$ is analogous to the Kolmogorov complexity of the epistemic state. ECT-1 claims that $S$ cannot compute $\SM$ within its own resource bound.
+
+\subsection{Landauer's Principle}
+
+Landauer showed that erasing one bit of information releases $kT\ln 2$ joules of heat---a thermodynamic lower bound on irreversible computation~\cite{landauer1961}.
+
+ECT-2 claims a computational analogue: reversing an epistemic update has a minimum computational cost exceeding the original update. Whether ECT-2 and Landauer's principle are formally connected is an open question.
+
+\subsection{The EED Conjecture}
+
+The EED (Entropy-Energy-Depth) Conjecture~\cite{eed2025} establishes that computational distinguishability is bounded by entropic, energetic, and causal factors. ECT generalizes EED from distinguishability bounds to full epistemic self-reference.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Formal Framework}
+\label{sec:framework}
+
+\begin{definition}[Computational System]
+A \emph{computational system} $S$ is a tuple $(M, \delta, R, V)$ where:
+\begin{itemize}[leftmargin=1.5em]
+  \item $M$ is a memory model (finite or countably infinite)
+  \item $\delta : M \times \mathcal{I} \to M$ is a transition function over input space $\mathcal{I}$
+  \item $R \in \mathbb{N} \cup \{\infty\}$ is a resource bound (time, space, or combined)
+  \item $V_S : \mathcal{P} \to \{\textsc{true}, \textsc{false}, \textsc{unknown}\}$ is a verification mechanism over proposition space $\mathcal{P}$
+\end{itemize}
+We assume $S$ is at minimum Turing-complete.
+\end{definition}
+
+\begin{definition}[Epistemic State]
+The \emph{epistemic state} of $S$ at time $t$ is:
+\[
+  \ES = \bigl\{ P \in \mathcal{P} : V_S(P) = \textsc{true} \text{ at time } t \bigr\}
+\]
+\end{definition}
+
+\begin{definition}[Complete Self-Model]
+The \emph{complete self-model} of $S$ is:
+\[
+  \SM = \bigl\{ M,\; \delta,\; R,\; E(S, \tau) \text{ for all } \tau \leq t_{\mathrm{current}} \bigr\}
+\]
+\end{definition}
+
+\begin{definition}[Self-Referential Proposition]
+A proposition $P$ is \emph{self-referential} with respect to $S$ if $\VS(P)$ requires access to some component of $\SM$.
+\end{definition}
+
+\begin{definition}[Epistemic Boundary]
+The \emph{epistemic boundary} of $S$ is:
+\[
+  \EB = \bigl\{ P \in \mathcal{P} : \VS(P) \text{ requires } \SM \;\wedge\; \mathrm{cost}(\SM) > \RS \bigr\}
+\]
+\end{definition}
+
+\begin{definition}[Epistemic Collapse]
+\emph{Epistemic collapse} occurs when $S$ initiates $\VS(P)$ for some $P \in \EB$ and the computation modifies $\ES$ such that $P$ becomes permanently unverifiable within $S$.
+\end{definition}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{ECT-1: Epistemic Incompleteness of Computation}
+\label{sec:ect1}
+
+\begin{conjecture}[ECT-1: Epistemic Incompleteness]
+\label{conj:ect1}
+For any sufficiently complex computational system $S$, the epistemic boundary $\EB$ is non-empty. That is, there exists a non-empty set $\US \subseteq \mathcal{P}$ such that for all $P \in \US$:
+\begin{enumerate}[label=(\roman*)]
+  \item $P$ is well-formed and decidable in principle,
+  \item $\VS(P)$ requires $\SM$,
+  \item $\mathrm{cost}(\SM) > \RS$,
+  \item therefore $\VS(P)$ is unreachable for $S$.
+\end{enumerate}
+\end{conjecture}
+
+Formally:
+\[
+  \exists\; \US \neq \emptyset \;:\; \forall P \in \US,\quad
+  \VS(P) \to \text{requires } \SM,\quad
+  \mathrm{cost}(\SM) > \RS
+  \implies \VS(P) \text{ unreachable for } S
+\]
+
+\subsection{Relationship to Existing Theory}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{} p{3cm} p{4.5cm} p{5cm} @{}}
+\toprule
+\textbf{Framework} & \textbf{Claim} & \textbf{ECT-1 Distinction} \\
+\midrule
+G\"{o}del & Some truths unprovable within $F$ & ECT-1 is about computational self-modeling cost, not provability \\
+Halting Problem & Some computations undecidable & ECT-1's $\US$ is decidable in principle \\
+Kolmogorov & $K(x)$ not always computable & ECT-1 extends to epistemic self-description \\
+EED Conjecture & Distinguishability bounded by $\Delta S, E, D$ & ECT-1 generalizes to full epistemic systems \\
+\bottomrule
+\end{tabular}
+\caption{ECT-1 in relation to existing foundational results.}
+\end{table}
+
+\subsection{Proof Sketch}
+
+\begin{lemma}[Self-Model Inflation]
+$\SM$ must include $E(S, \tau)$ for all $\tau \leq t_{\mathrm{current}}$. Since $\ES$ grows as $S$ operates, $\SM$ is strictly larger than any finite snapshot $S$ can compute at runtime.
+\end{lemma}
+
+\begin{proof}[Proof Sketch]
+Any complete self-model at time $t$ must describe the system's state at $t$. Computing the self-model takes nonzero time $\Delta t > 0$. By the time the model is computed at $t + \Delta t$, the system has transitioned to a new state, invalidating the model. Therefore the self-model always lags the actual state, making a complete fixed-point self-model computationally unreachable in finite time under finite $R$.
+\end{proof}
+
+\begin{lemma}[Fixed-Point Paradox]
+Verifying $P \in \EB$ requires $S$ to reach a stable self-model fixed point. But any computation toward the self-model changes $S$'s state, making the model stale.
+\end{lemma}
+
+\begin{lemma}[Resource Overflow]
+If $\RS$ is finite and $\mathrm{cost}(\SM) > \RS$, then no $P$ requiring $\SM$ can be verified. Since sufficiently self-referential systems always have $\mathrm{cost}(\SM) > \RS$, $\EB \neq \emptyset$.
+\end{lemma}
+
+\begin{remark}
+A full formal proof of ECT-1 requires: (i) precise formalization of $\SM$ as a computational object with a well-defined cost measure; (ii) a formal account of what ``requires'' means in ``$\VS(P)$ requires $\SM$''; (iii) a complexity-theoretic argument establishing that $\mathrm{cost}(\SM) > \RS$ for sufficiently complex $S$. These are open problems within the ECT program.
+\end{remark}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{ECT-2: Epistemic Irreversibility}
+\label{sec:ect2}
+
+\begin{definition}[Epistemic Residue]
+The \emph{epistemic residue} of computation $C$ applied to $S$ is:
+\[
+  \Delta(C) = \ES \setminus \ESp
+\]
+the set of propositions present in the prior epistemic state but absent from the updated one.
+\end{definition}
+
+\begin{conjecture}[ECT-2: Epistemic Irreversibility]
+\label{conj:ect2}
+For any non-trivial computation $C$ producing a genuine epistemic update in $S$:
+\begin{enumerate}[label=(\roman*)]
+  \item $\Delta(C) \neq \emptyset$ --- some prior epistemic content is always lost,
+  \item there is no computation $C^{-1}$ within $S$ such that $\mathrm{cost}(C^{-1}) \leq \mathrm{cost}(C)$ and $\ES = \mathrm{recover}(\ESp, C^{-1})$.
+\end{enumerate}
+\end{conjecture}
+
+\begin{remark}[Connection to Landauer]
+Landauer's principle~\cite{landauer1961} establishes a thermodynamic lower bound on erasing information. ECT-2 claims a computational analogue: epistemic state transitions are irreversible at the computational level, independent of thermodynamics. Whether the two principles are formally connected is an open question.
+\end{remark}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{ECT-3: Observer Epistemic Relativity}
+\label{sec:ect3}
+
+\begin{definition}[Observer Context]
+An \emph{observer context} $O$ for system $S$ is a tuple:
+\[
+  O = (P_{\mathrm{prior}},\; F_{\mathrm{input}},\; \Gamma_{\mathrm{interaction}})
+\]
+where $P_{\mathrm{prior}}$ is a prior distribution over $\mathcal{P}$, $F_{\mathrm{input}}$ is an input filter, and $\Gamma_{\mathrm{interaction}}$ is an interaction history.
+\end{definition}
+
+\begin{definition}[Observer-Relative Epistemic Boundary]
+The epistemic boundary of $S$ under observer context $O$ is:
+\[
+  \partial E(S, O) = \bigl\{ P : \VS(P) \text{ is unreachable given } O \bigr\}
+\]
+\end{definition}
+
+\begin{conjecture}[ECT-3: Observer Epistemic Relativity]
+\label{conj:ect3}
+For any two systems $S_1$, $S_2$ with identical computational resources $R$ but observer contexts $O_1 \neq O_2$:
+\begin{align}
+  \partial E(S_1, O_1) &\neq \partial E(S_2, O_2) \tag{boundaries differ} \\
+  \partial E(S_1, O_1) \cap \partial E(S_2, O_2) &\neq \emptyset \tag{shared unknowables exist} \\
+  \partial E(S_1, O_1) \;\triangle\; \partial E(S_2, O_2) &\neq \emptyset \tag{asymmetric unknowables exist}
+\end{align}
+\end{conjecture}
+
+\subsection{Observer Context Algebra (Preliminary)}
+
+Define the \emph{observer context space} $\mathcal{O}$ as the set of all possible observer contexts. We propose the following operations:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item $O_1 \oplus O_2$: \emph{context composition}, the merged context of two interacting systems
+  \item $O_1 \ominus O_2$: \emph{context subtraction}, what $O_1$ knows that $O_2$ does not
+  \item $|O|$: \emph{context magnitude}, a measure of epistemic reach
+\end{itemize}
+
+\begin{conjecture}[Context Composition Shrinks Boundaries]
+\[
+  \partial E(S,\; O_1 \oplus O_2) \;\subseteq\; \partial E(S, O_1) \cap \partial E(S, O_2)
+\]
+That is, combining observer contexts shrinks the epistemic boundary. Collaboration reduces unknowability.
+\end{conjecture}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Unified Structure: The ECT Triangle}
+\label{sec:unified}
+
+ECT-1, ECT-2, and ECT-3 are not independent. They describe three facets of a single underlying structure:
+
+\begin{center}
+\begin{tabular}{c}
+\textbf{ECT-1} (Incompleteness) \\
+$\triangle$ \\
+\textbf{ECT-2} (Irreversibility) \quad\quad \textbf{ECT-3} (Relativity)
+\end{tabular}
+\end{center}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item ECT-1 establishes that the epistemic boundary \emph{exists}.
+  \item ECT-2 establishes that crossing it \emph{destroys what came before}.
+  \item ECT-3 establishes that its location \emph{depends on who is looking}.
+\end{itemize}
+
+Together: \emph{every computational system has knowledge it cannot reach, loses knowledge it once had, and its particular pattern of unknowability is unique to its context.}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Implications}
+\label{sec:implications}
+
+\subsection{For Artificial Intelligence}
+
+AI systems are computational systems. ECT predicts:
+\begin{itemize}[leftmargin=1.5em]
+  \item A class of self-referential truths no AI can verify about itself (ECT-1)
+  \item Training-induced epistemic destruction that cannot be fully reversed (ECT-2)
+  \item Observer-context-dependent knowledge limits, meaning no single AI system can verify all epistemically relevant propositions (ECT-3)
+\end{itemize}
+
+\subsection{For Formal Verification}
+
+Program verifiers are computational systems. ECT-1 implies there exist properties of programs that no verifier can confirm about itself --- extending classical undecidability to resource-bounded self-referential verification.
+
+\subsection{For Programming Language Design}
+
+ECT motivates an \emph{epistemic type system} in which the type of a value encodes its epistemic status:
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{certain<T>}: fully verified
+  \item \texttt{uncertain<T>}: probabilistically estimated
+  \item \texttt{contradictory<T>}: internally inconsistent
+  \item \texttt{collapsed<T>}: epistemically destroyed
+  \item \texttt{observer<T, O>}: context-relative
+\end{itemize}
+This is the foundation of the SLIME language's planned ECT integration.
+
+\subsection{For Multi-Agent Systems}
+
+ECT-3's Observer Context Algebra provides a formal basis for designing agent ensembles that maximize epistemic coverage. Diversity of observer context is not merely beneficial---it is formally necessary for covering the maximum portion of proposition space.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Open Problems}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Prove or disprove: $\EB$ is countably infinite for any Turing-complete $S$.
+  \item Define complexity classes $\mathbf{EK}$ (Epistemically Knowable) and $\mathbf{EU}$ (Epistemically Unknowable) and characterize their relationship to $\mathbf{P}$, $\mathbf{NP}$, and $\mathbf{EXPTIME}$.
+  \item Formalize the Observer Context Algebra as a lattice structure.
+  \item Prove or disprove: there exists $S^*$ such that $\partial E(S^*) = \emptyset$ (ECT-1 conjectures no such system exists above a complexity threshold).
+  \item Establish a formal connection between ECT-2 and Landauer's principle.
+  \item Determine whether ECT-3 observer-relative boundaries converge or diverge as $|O|$ grows.
+  \item Determine whether quantum information theory (no-cloning, measurement irreversibility) provides formal machinery for ECT-2.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Conclusion}
+
+Epistemic Computation Theory proposes that computational systems face fundamental limits not just in what they can compute but in what they can know about themselves and their knowledge. The three conjectures --- Epistemic Incompleteness, Epistemic Irreversibility, and Observer Epistemic Relativity --- form a unified framework with implications across AI, formal verification, programming language theory, and multi-agent systems.
+
+This preprint is the opening statement of a research program, not its conclusion. The conjectures are open. The proofs are incomplete. The framework is young.
+
+\medskip
+\noindent\textit{The lab is open.}
+
+% ── References ────────────────────────────────────────────────────────────────
+\begin{thebibliography}{99}
+
+\bibitem{godel1931}
+K.~G\"{o}del,
+``\"{U}ber formal unentscheidbare S\"{a}tze der Principia Mathematica und verwandter Systeme,''
+\emph{Monatshefte f\"{u}r Mathematik und Physik}, vol.~38, pp.~173--198, 1931.
+
+\bibitem{turing1936}
+A.~M.~Turing,
+``On Computable Numbers, with an Application to the Entscheidungsproblem,''
+\emph{Proceedings of the London Mathematical Society}, vol.~2, no.~42, pp.~230--265, 1936.
+
+\bibitem{kolmogorov1965}
+A.~N.~Kolmogorov,
+``Three approaches to the quantitative definition of information,''
+\emph{Problems of Information Transmission}, vol.~1, no.~1, pp.~1--7, 1965.
+
+\bibitem{landauer1961}
+R.~Landauer,
+``Irreversibility and heat generation in the computing process,''
+\emph{IBM Journal of Research and Development}, vol.~5, no.~3, pp.~183--191, 1961.
+
+\bibitem{chaitin1974}
+G.~J.~Chaitin,
+``Information-theoretic limitations of formal systems,''
+\emph{Journal of the ACM}, vol.~21, no.~3, pp.~403--424, 1974.
+
+\bibitem{bennett1973}
+C.~H.~Bennett,
+``Logical reversibility of computation,''
+\emph{IBM Journal of Research and Development}, vol.~17, no.~6, pp.~525--532, 1973.
+
+\bibitem{pearl2000}
+J.~Pearl,
+\emph{Causality: Models, Reasoning, and Inference}.
+Cambridge University Press, 2000.
+
+\bibitem{nagel1986}
+T.~Nagel,
+\emph{The View from Nowhere}.
+Oxford University Press, 1986.
+
+\bibitem{eed2025}
+D.~S.~Ofuowoicho,
+``EED Conjecture of Computational Distinguishability,''
+GitHub Repository, 2025.
+\url{https://github.com/er4700345-coder/eed-computation-model}
+
+\end{thebibliography}
+
+\end{document}
