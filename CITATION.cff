@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you build on ECT, please cite it as below."
+authors:
+  - family-names: Ofuowoicho
+    given-names: Divine Sunday
+    orcid: ""
+    email: divinesunday247@gmail.com
+title: "Epistemic Computation Theory (ECT)"
+version: 0.1.0
+date-released: 2026-04-01
+url: "https://github.com/er4700345-coder/epistemic-computation-theory"
+abstract: >
+  A formal research framework studying the fundamental limits of knowledge
+  within computational systems. ECT unifies three conjectures: the
+  computational unreachability of certain truths (ECT-1), the irreversibility
+  of epistemic state transitions (ECT-2), and the observer-relativity of
+  epistemic boundaries (ECT-3).
+keywords:
+  - epistemic computation
+  - computational limits
+  - self-referential systems
+  - complexity theory
+  - AI reasoning
+  - formal theory
+license: MIT
