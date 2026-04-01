@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECT — Epistemic Computation Theory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #0f0f0f;
+    --border: #1e1e1e;
+    --border-bright: #2e2e2e;
+    --text: #e8e2d9;
+    --text-dim: #6b6560;
+    --text-dimmer: #3a3530;
+    --accent: #c8a96e;
+    --accent-dim: #7a6540;
+    --red: #8b2020;
+    --white: #f5f0e8;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Libre Baskerville', serif;
+    --display: 'DM Serif Display', serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,8,0.95);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 100;
+    animation: fadeDown 0.8s ease forwards;
+  }
+
+  .topbar-left {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .topbar-left span {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+
+  .topbar-nav {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .topbar-nav a {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .topbar-nav a:hover { color: var(--accent); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 120px 40px 80px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    animation: fadeIn 1.2s ease forwards;
+  }
+
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(52px, 8vw, 110px);
+    line-height: 0.95;
+    color: var(--white);
+    margin-bottom: 40px;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.5s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 60px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.7s forwards;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.9s forwards;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-meta-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* Divider line */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* Section */
+  section {
+    padding: 100px 40px;
+    border-bottom: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.2em;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(28px, 4vw, 48px);
+    color: var(--white);
+    line-height: 1.1;
+  }
+
+  /* Abstract */
+  .abstract-text {
+    font-size: 18px;
+    color: var(--text);
+    max-width: 720px;
+    line-height: 1.9;
+    border-left: 2px solid var(--accent);
+    padding-left: 32px;
+  }
+
+  /* Conjectures */
+  .conjectures-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .conjecture-card {
+    background: var(--bg);
+    padding: 48px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .conjecture-card:hover { background: var(--surface); }
+
+  .conjecture-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .conjecture-id::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-bright);
+    max-width: 80px;
+  }
+
+  .conjecture-name {
+    font-family: var(--display);
+    font-size: 26px;
+    color: var(--white);
+    margin-bottom: 16px;
+  }
+
+  .conjecture-desc {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 640px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+
+  .conjecture-formal {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent-dim);
+    background: rgba(200, 169, 110, 0.04);
+    border: 1px solid rgba(200, 169, 110, 0.1);
+    padding: 16px 20px;
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent-dim);
+    margin-top: 20px;
+  }
+
+  /* Definitions */
+  .definitions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .def-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .def-term {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    padding-top: 3px;
+  }
+
+  .def-body {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  .def-body code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent-dim);
+    background: rgba(200,169,110,0.06);
+    padding: 1px 6px;
+  }
+
+  /* ECT Triangle */
+  .triangle-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .triangle-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .triangle-svg text {
+    font-family: var(--mono);
+  }
+
+  .triangle-text h3 {
+    font-family: var(--display);
+    font-size: 32px;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  .triangle-text p {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.9;
+  }
+
+  /* Roadmap */
+  .roadmap-phases {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 40px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .phase-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.15em;
+  }
+
+  .phase-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .phase-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .phase-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .phase-item-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border-bright);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .phase-item-dot.done { background: var(--accent); }
+
+  /* Footer */
+  footer {
+    padding: 60px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .footer-quote {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--text-dimmer);
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  .footer-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-meta a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dimmer);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    transition: color 0.2s;
+  }
+
+  .footer-meta a:hover { color: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Horizontal rule */
+  .full-border {
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    .topbar { padding: 0 20px; }
+    .topbar-nav { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    section { padding: 60px 24px; }
+    .def-item { grid-template-columns: 1fr; gap: 8px; }
+    .phase { grid-template-columns: 1fr; gap: 16px; }
+    .triangle-section { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 32px; }
+    .footer-meta { text-align: left; }
+    .conjecture-formal { white-space: pre-wrap; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span>ECT</span>Epistemic Computation Theory
+  </div>
+  <nav>
+    <ul class="topbar-nav">
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#conjectures">Conjectures</a></li>
+      <li><a href="#definitions">Definitions</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="https://github.com/er4700345-coder/epistemic-computation-theory" target="_blank">GitHub</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">Research Program · v0.1.0 · April 2026</div>
+  <h1 class="hero-title">Epistemic<br><em>Computation</em><br>Theory</h1>
+  <p class="hero-subtitle">A formal framework for the limits of knowledge within computational systems. What cannot be known — and why — is not a philosophy. It is a theorem.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Author</span>
+      <span class="hero-meta-value">Divine Sunday Ofuowoicho</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Status</span>
+      <span class="hero-meta-value">Active Research</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Conjectures</span>
+      <span class="hero-meta-value">ECT-1 · ECT-2 · ECT-3</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Preprint</span>
+      <span class="hero-meta-value">v0.1 — In Preparation</span>
+    </div>
+  </div>
+</div>
+
+<hr class="full-border">
+
+<!-- Abstract -->
+<section id="abstract">
+  <div class="section-header reveal">
+    <span class="section-num">§ 00</span>
+    <h2 class="section-title">Abstract</h2>
+  </div>
+  <p class="abstract-text reveal">
+    Classical complexity theory asks <em>how hard</em> it is to compute a function. Gödel's theorems ask what a formal system can <em>prove</em>. ECT asks a different question entirely: can a computational system formally verify that it <em>knows</em> a truth — when verifying that truth requires complete self-knowledge?<br><br>
+    We conjecture the answer is no. Not always. And the boundary where this fails is non-empty, structurally rich, and observer-relative. ECT-1, ECT-2, and ECT-3 formalize this claim across three axes: incompleteness, irreversibility, and relativity.
+  </p>
+</section>
+
+<!-- Conjectures -->
+<section id="conjectures" style="max-width:100%; padding: 100px 0; border-bottom: 1px solid var(--border);">
+  <div style="max-width:1200px; margin:0 auto; padding: 0 40px;">
+    <div class="section-header reveal">
+      <span class="section-num">§ 01</span>
+      <h2 class="section-title">The Three Conjectures</h2>
+    </div>
+  </div>
+  <div class="conjectures-grid reveal">
+    <div class="conjecture-card">
+      <div class="conjecture-id">ECT-1</div>
+      <h3 class="conjecture-name">Epistemic Incompleteness of Computation</h3>
+      <p class="conjecture-desc">For any sufficiently complex computational system, there exists a non-empty class of well-formed, decidable propositions it cannot verify — because verification requires a complete self-model whose computational cost exceeds the system's resource bound.</p>
+      <div class="conjecture-formal">∃ U(S) ≠ ∅ : ∀P ∈ U(S),
+  V_S(P) → requires Σ(S)
+  cost(Σ(S)) > R(S)
+  ⟹ V_S(P) unreachable for S</div>
+      <div class="status-badge">Open Conjecture</div>
+    </div>
+
+    <div class="conjecture-card">
+      <div class="conjecture-id">ECT-2</div>
+      <h3 class="conjecture-name">Epistemic Irreversibility</h3>
+      <p class="conjecture-desc">Every act of computation that produces a genuine epistemic update necessarily destroys prior epistemic content. Knowledge is not accumulated — it is transformed. And transformation has an irreversible cost.</p>
+      <div class="conjecture-formal">∀C (non-trivial epistemic update):
+  Δ(C) = E(S,t) \ E(S,t+1) ≠ ∅
+  ∄ C⁻¹ : cost(C⁻¹) ≤ cost(C)
+           ∧ E(S,t) = recover(E(S,t+1), C⁻¹)</div>
+      <div class="status-badge">Open Conjecture</div>
+    </div>
+
+    <div class="conjecture-card">
+      <div class="conjecture-id">ECT-3</div>
+      <h3 class="conjecture-name">Observer Epistemic Relativity</h3>
+      <p class="conjecture-desc">Epistemic boundaries are not absolute. They are relative to the observer context of the system. Two computationally identical systems with different contexts will have non-overlapping unknowable sets. There is no view from nowhere in computation.</p>
+      <div class="conjecture-formal">∀ S₁, S₂ : R(S₁) = R(S₂), O₁ ≠ O₂
+  ∂E(S₁, O₁) ≠ ∂E(S₂, O₂)       [boundaries differ]
+  ∂E(S₁, O₁) ∩ ∂E(S₂, O₂) ≠ ∅  [shared unknowables]
+  ∂E(S₁, O₁) △ ∂E(S₂, O₂) ≠ ∅  [asymmetric unknowables]</div>
+      <div class="status-badge">Open Conjecture</div>
+    </div>
+  </div>
+</section>
+
+<!-- Definitions -->
+<section id="definitions">
+  <div class="section-header reveal">
+    <span class="section-num">§ 02</span>
+    <h2 class="section-title">Core Definitions</h2>
+  </div>
+  <div class="definitions-list">
+    <div class="def-item reveal">
+      <div class="def-term">Epistemic State<br><code>E(S, t)</code></div>
+      <div class="def-body">The complete set of propositions that system S has verified as true at time t. The dynamic object ECT tracks across computations.</div>
+    </div>
+    <div class="def-item reveal">
+      <div class="def-term">Epistemic Boundary<br><code>∂E(S)</code></div>
+      <div class="def-body">The set of well-formed, decidable propositions that S cannot verify without achieving an unreachable complete self-model. The central object of ECT-1.</div>
+    </div>
+    <div class="def-item reveal">
+      <div class="def-term">Complete Self-Model<br><code>Σ(S)</code></div>
+      <div class="def-body">The total representation of S — its memory model, transition function, resource bound, and full epistemic state history. Computing <code>Σ(S)</code> is the central challenge of ECT-1.</div>
+    </div>
+    <div class="def-item reveal">
+      <div class="def-term">Epistemic Collapse</div>
+      <div class="def-body">The event when S attempts to verify a proposition requiring complete self-knowledge, and the attempt itself destroys the epistemic state needed to complete the verification. A computational paradox.</div>
+    </div>
+    <div class="def-item reveal">
+      <div class="def-term">Observer Context<br><code>O = (P, F, Γ)</code></div>
+      <div class="def-body">A tuple of prior beliefs <code>P_prior</code>, input filter <code>F_input</code>, and interaction history <code>Γ</code> that shapes a system's epistemic capabilities. The central object of ECT-3.</div>
+    </div>
+    <div class="def-item reveal">
+      <div class="def-term">Epistemic Residue<br><code>Δ(C)</code></div>
+      <div class="def-body">The set of propositions lost from the epistemic state after computation C is applied. <code>Δ(C) = E(S,t) \ E(S,t+1)</code>. ECT-2 claims this is always non-empty.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ECT Triangle -->
+<section>
+  <div class="section-header reveal">
+    <span class="section-num">§ 03</span>
+    <h2 class="section-title">Unified Structure</h2>
+  </div>
+  <div class="triangle-section reveal">
+    <div class="triangle-visual">
+      <svg width="320" height="300" viewBox="0 0 320 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Triangle -->
+        <polygon points="160,30 30,270 290,270" fill="none" stroke="#2e2e2e" stroke-width="1"/>
+        <!-- Inner lines -->
+        <line x1="160" y1="30" x2="160" y2="270" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4,6"/>
+        <line x1="30" y1="270" x2="225" y2="150" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4,6"/>
+        <line x1="290" y1="270" x2="95" y2="150" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4,6"/>
+        <!-- Nodes -->
+        <circle cx="160" cy="30" r="5" fill="#c8a96e"/>
+        <circle cx="30" cy="270" r="5" fill="#c8a96e"/>
+        <circle cx="290" cy="270" r="5" fill="#c8a96e"/>
+        <!-- Labels -->
+        <text x="160" y="14" text-anchor="middle" fill="#c8a96e" font-size="10" letter-spacing="2" font-family="IBM Plex Mono, monospace">ECT-1</text>
+        <text x="160" y="26" text-anchor="middle" fill="#6b6560" font-size="8" font-family="IBM Plex Mono, monospace">INCOMPLETENESS</text>
+        <text x="10" y="290" text-anchor="start" fill="#c8a96e" font-size="10" letter-spacing="2" font-family="IBM Plex Mono, monospace">ECT-2</text>
+        <text x="10" y="300" text-anchor="start" fill="#6b6560" font-size="8" font-family="IBM Plex Mono, monospace">IRREVERSIBILITY</text>
+        <text x="310" y="290" text-anchor="end" fill="#c8a96e" font-size="10" letter-spacing="2" font-family="IBM Plex Mono, monospace">ECT-3</text>
+        <text x="310" y="300" text-anchor="end" fill="#6b6560" font-size="8" font-family="IBM Plex Mono, monospace">RELATIVITY</text>
+        <!-- Center -->
+        <circle cx="160" cy="190" r="2" fill="#3a3530"/>
+        <text x="160" y="182" text-anchor="middle" fill="#3a3530" font-size="8" font-family="IBM Plex Mono, monospace">EPISTEMIC</text>
+        <text x="160" y="194" text-anchor="middle" fill="#3a3530" font-size="8" font-family="IBM Plex Mono, monospace">BOUNDARY</text>
+      </svg>
+    </div>
+    <div class="triangle-text">
+      <h3>Three faces. One structure.</h3>
+      <p>ECT-1 establishes that the epistemic boundary <em>exists</em>. ECT-2 establishes that crossing it <em>destroys what came before</em>. ECT-3 establishes that its location <em>depends on who is looking</em>.<br><br>Together: every computational system has knowledge it cannot reach, loses knowledge it once had, and its particular pattern of unknowability is unique to its context.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap -->
+<section id="roadmap">
+  <div class="section-header reveal">
+    <span class="section-num">§ 04</span>
+    <h2 class="section-title">Research Roadmap</h2>
+  </div>
+  <div class="roadmap-phases">
+    <div class="phase reveal">
+      <div class="phase-label">
+        <span class="phase-num">PHASE 01</span>
+        <span class="phase-name">Foundation</span>
+      </div>
+      <div class="phase-items">
+        <div class="phase-item"><div class="phase-item-dot done"></div>ECT-1 Conjecture formally stated</div>
+        <div class="phase-item"><div class="phase-item-dot done"></div>ECT-2 & ECT-3 introduced</div>
+        <div class="phase-item"><div class="phase-item-dot done"></div>Core definitions published</div>
+        <div class="phase-item"><div class="phase-item-dot done"></div>GitHub repository live</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>LaTeX preprint v0.1 → arXiv</div>
+      </div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-label">
+        <span class="phase-num">PHASE 02</span>
+        <span class="phase-name">Formalization</span>
+      </div>
+      <div class="phase-items">
+        <div class="phase-item"><div class="phase-item-dot"></div>Define complexity classes EK and EU</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Prove or disprove: EK ⊂ decidable</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Formalize Observer Context algebra</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Peer review outreach</div>
+      </div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-label">
+        <span class="phase-num">PHASE 03</span>
+        <span class="phase-name">Language</span>
+      </div>
+      <div class="phase-items">
+        <div class="phase-item"><div class="phase-item-dot"></div>ECT type system: uncertain&lt;T&gt;, contradictory&lt;T&gt;, collapsed&lt;T&gt;</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Integration into SLIME compiler</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>SLIME + ECT joint paper</div>
+      </div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-label">
+        <span class="phase-num">PHASE 04</span>
+        <span class="phase-name">ECT-AI</span>
+      </div>
+      <div class="phase-items">
+        <div class="phase-item"><div class="phase-item-dot"></div>Reasoning engine grounded in ECT semantics</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Formal output: "I cannot know this" + proof</div>
+        <div class="phase-item"><div class="phase-item-dot"></div>Research paper: ECT-AI</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<hr class="full-border">
+<footer>
+  <p class="footer-quote">"A system cannot compute its way out of its own blindness."</p>
+  <div class="footer-meta">
+    <a href="https://github.com/er4700345-coder" target="_blank">GitHub — er4700345-coder</a>
+    <a href="https://github.com/er4700345-coder/epistemic-computation-theory" target="_blank">ECT Repository</a>
+    <a href="mailto:divinesunday247@gmail.com">divinesunday247@gmail.com</a>
+    <a href="#" style="color: var(--text-dimmer); cursor: default;">© 2026 Divine Sunday Ofuowoicho Labs</a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
